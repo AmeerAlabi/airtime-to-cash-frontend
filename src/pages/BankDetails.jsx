@@ -22,7 +22,7 @@ const EnterBankDetails = () => {
 
   const fetchTransaction = async (phoneNumber) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/transaction-status/${phoneNumber}`);
+      const response = await fetch(`https://airtime-to-cash-backend.onrender.com/api/transaction-status/${phoneNumber}`);
       const data = await response.json();
       if (response.ok) {
         setTransaction(data);
@@ -52,7 +52,7 @@ const EnterBankDetails = () => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/enter-bank-details", {
+      const response = await fetch("https://airtime-to-cash-backend.onrender.com/api/enter-bank-details", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, bankName, accountNumber }),
