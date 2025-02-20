@@ -1,0 +1,107 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+const EnterBankDetails = () => {
+  const [phone, setPhone] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [transaction, setTransaction] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedPhone = localStorage.getItem("userPhone");
+    if (storedPhone) {
+      setPhone(storedPhone);
+      fetchTransaction(storedPhone);
+    } else {
+      setError("No phone number found. Please start over.");
+    }
+  }, []);
+
+  const fetchTransaction = async (phoneNumber) => {
+    try {
+      const response = await fetch(`https://airtime-to-cash-backend.onrender.com/api/transaction-status/${phoneNumber}`);
+      const data = await response.json();
+      if (response.ok) {
+        setTransaction(data);
+      } else {
+        setError("No transaction found. Please start over.");
+      }
+    } catch (error) {
+      setError("Error fetching transaction.");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!phone || !bankName || !accountNumber) {
+      setError("All fields are required!");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("https://airtime-to-cash-backend.onrender.com/api/enter-bank-details", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, bankName, accountNumber }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to process payment.");
+      }
+
+      alert(data.message);
+      navigate("/success");
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-4">Enter Bank Details</h2>
+        {transaction ? (
+          <div className="mb-4 p-4 bg-gray-200 rounded-lg">
+            <p className="text-lg font-semibold">Network: {transaction.network}</p>
+            <p className="text-lg font-semibold">Amount: {transaction.amount}</p>
+            <p className="text-lg font-semibold">Cash Value: ₦{transaction.cashValue}</p>
+          </div>
+        ) : (
+          <p className="text-red-500 text-center">No transaction found.</p>
+        )}
+        <input
+          type="text"
+          placeholder="Bank Name"
+          value={bankName}
+          onChange={(e) => setBankName(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded mt-2"
+        />
+        <input
+          type="text"
+          placeholder="Account Number"
+          value={accountNumber}
+          onChange={(e) => setAccountNumber(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded mt-2"
+        />
+        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+        <button
+          onClick={handleSubmit}
+          className="w-full bg-blue-600 text-white p-2 mt-4 rounded hover:bg-blue-700"
+        >
+          {loading ? "Processing..." : "Submit Bank Details"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default EnterBankDetails;
