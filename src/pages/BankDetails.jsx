@@ -22,7 +22,7 @@ const EnterBankDetails = () => {
 
   const fetchTransaction = async (phoneNumber) => {
     try {
-      const response = await fetch(`https://airtime-to-cash-backend.onrender.com/api/transaction-status/${phoneNumber}`);
+      const response = await fetch(`http://localhost:5000/api/transaction-status/${phoneNumber}`);
       const data = await response.json();
       if (response.ok) {
         setTransaction(data);
@@ -39,12 +39,20 @@ const EnterBankDetails = () => {
       setError("All fields are required!");
       return;
     }
+    if (phone.length !== 11 || !/^[0-9]+$/.test(phone)) {
+      setError("Phone number must be exactly 11 digits and contain only numbers!");
+      return;
+    }
+    if (accountNumber.length !== 10 || !/^[0-9]+$/.test(accountNumber)) {
+      setError("Account number must be exactly 10 digits and contain only numbers!");
+      return;
+    }
 
     setLoading(true);
     setError("");
 
     try {
-      const response = await fetch("https://airtime-to-cash-backend.onrender.com/api/enter-bank-details", {
+      const response = await fetch("http://localhost:5000/api/enter-bank-details", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, bankName, accountNumber }),
@@ -95,7 +103,7 @@ const EnterBankDetails = () => {
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         <button
           onClick={handleSubmit}
-          className="w-full bg-blue-600 text-white p-2 mt-4 rounded hover:bg-blue-700"
+          className="w-full bg-green-600 text-white p-2 mt-4 rounded hover:bg-green-700"
         >
           {loading ? "Processing..." : "Submit Bank Details"}
         </button>

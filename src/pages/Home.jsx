@@ -6,6 +6,7 @@ const Home = () => {
   const [phone, setPhone] = useState("");
   const [network, setNetwork] = useState("");
   const [amount, setAmount] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const calculateCashValue = (network, amount) => {
@@ -19,6 +20,23 @@ const Home = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    if (!/^[0-9]{11}$/.test(phone)) {
+      setError("Phone number must be exactly 11 digits and contain only numbers.");
+      return;
+    }
+
+    if (!network) {
+      setError("Please select a network.");
+      return;
+    }
+
+    if (!amount || amount <= 0) {
+      setError("Amount must be greater than 0.");
+      return;
+    }
+
     const cashValue = calculateCashValue(network, amount);
     const recipientNumber = generateRecipientNumber();
     
@@ -33,7 +51,7 @@ const Home = () => {
       localStorage.setItem("userPhone", phone);
       navigate("/transaction", { state: res.data });
     } catch (error) {
-      alert(error.response?.data?.message || "An error occurred");
+      setError(error.response?.data?.message || "An error occurred");
     }
   };
 
@@ -69,6 +87,7 @@ const Home = () => {
           className="w-full p-2 border mb-3"
           required
         />
+        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
         <button className="bg-blue-500 text-white w-full p-2 rounded">Proceed</button>
       </form>
     </div>
